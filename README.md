@@ -17,15 +17,304 @@
 
 ---
 
-## Setup AWS EKS 
 
+## Setup AWS EKS Cluster by Terraform
 
+### 1. AWS CLI Install
+Donload and install AWS CLI for connect with aws cloud
 
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+```
+**Expected output:**
 
+```text
+aws-cli/2.x.x Python/3.x.x Linux/...
+```
 
+### 2. Configure AWS CLI
+You need AWS credentials to use the CLI. Run:
 
+```bash
+aws configure
+```
 
+Provide the following when prompted:
 
+- AWS Access Key ID
+- AWS Secret Access Key
+- Default region (e.g. `ap-southeast-1`)
+- Output format (`json` recommended)
+
+### 3. Terraform Installation on Ubuntu  
+**Method 1: Official APT Repository (Recommended for Production)**
+
+```bash
+# Install prerequisites
+sudo apt install -y gnupg software-properties-common curl
+
+# Add HashiCorp GPG key
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Add the official HashiCorp Linux repo
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# Update and install Terraform
+sudo apt update
+sudo apt install terraform -y
+
+# Verify installation
+terraform -version
+
+```
+**Method 2: Snap (Quick Setup, Not Always Latest Version)**
+
+```bash
+sudo snap install terraform --classic
+
+```
+### 4. EKS Cluster Create by Terraform
+
+**Terraform Folder create**
+
+```bash
+mkdir terra
+cd terra
+```
+**Terraform File Create**
+
+1. Main File create
+```bash
+vim main.tf
+```
+Copy configure file
+
+```bash
+provider "aws" {
+  region = "ap-south-1"
+}
+
+resource "aws_vpc" "abrahimcse_vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "abrahimcse-vpc"
+  }
+}
+
+resource "aws_subnet" "abrahimcse_subnet" {
+  count = 2
+  vpc_id                  = aws_vpc.abrahimcse_vpc.id
+  cidr_block              = cidrsubnet(aws_vpc.abrahimcse_vpc.cidr_block, 8, count.index)
+  availability_zone       = element(["ap-south-1a", "ap-south-1b"], count.index)
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "abrahimcse-subnet-${count.index}"
+  }
+}
+
+resource "aws_internet_gateway" "abrahimcse_igw" {
+  vpc_id = aws_vpc.abrahimcse_vpc.id
+
+  tags = {
+    Name = "abrahimcse-igw"
+  }
+}
+
+resource "aws_route_table" "abrahimcse_route_table" {
+  vpc_id = aws_vpc.abrahimcse_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.abrahimcse_igw.id
+  }
+
+  tags = {
+    Name = "abrahimcse-route-table"
+  }
+}
+
+resource "aws_route_table_association" "a" {
+  count          = 2
+  subnet_id      = aws_subnet.abrahimcse_subnet[count.index].id
+  route_table_id = aws_route_table.abrahimcse_route_table.id
+}
+
+resource "aws_security_group" "abrahimcse_cluster_sg" {
+  vpc_id = aws_vpc.abrahimcse_vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "abrahimcse-cluster-sg"
+  }
+}
+
+resource "aws_security_group" "abrahimcse_node_sg" {
+  vpc_id = aws_vpc.abrahimcse_vpc.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "abrahimcse-node-sg"
+  }
+}
+
+resource "aws_eks_cluster" "abrahimcse" {
+  name     = "abrahimcse-cluster"
+  role_arn = aws_iam_role.abrahimcse_cluster_role.arn
+
+  vpc_config {
+    subnet_ids         = aws_subnet.abrahimcse_subnet[*].id
+    security_group_ids = [aws_security_group.abrahimcse_cluster_sg.id]
+  }
+}
+
+resource "aws_eks_node_group" "abrahimcse" {
+  cluster_name    = aws_eks_cluster.abrahimcse.name
+  node_group_name = "abrahimcse-node-group"
+  node_role_arn   = aws_iam_role.abrahimcse_node_group_role.arn
+  subnet_ids      = aws_subnet.abrahimcse_subnet[*].id
+
+  scaling_config {
+    desired_size = 3
+    max_size     = 3
+    min_size     = 3
+  }
+
+  instance_types = ["t2.large"]
+
+  remote_access {
+    ec2_ssh_key = var.ssh_key_name
+    source_security_group_ids = [aws_security_group.abrahimcse_node_sg.id]
+  }
+}
+
+resource "aws_iam_role" "abrahimcse_cluster_role" {
+  name = "abrahimcse-cluster-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "eks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "abrahimcse_cluster_role_policy" {
+  role       = aws_iam_role.abrahimcse_cluster_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_iam_role" "abrahimcse_node_group_role" {
+  name = "abrahimcse-node-group-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "abrahimcse_node_group_role_policy" {
+  role       = aws_iam_role.abrahimcse_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "abrahimcse_node_group_cni_policy" {
+  role       = aws_iam_role.abrahimcse_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "abrahimcse_node_group_registry_policy" {
+  role       = aws_iam_role.abrahimcse_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+```
+2. Variable file create
+```bash
+vim variable.tf
+```
+copy and past
+```bash
+variable "ssh_key_name" {
+  description = "The name of the SSH key pair to use for instances"
+  type        = string
+  default     = "hsms-stg-common"
+}
+```
+3. Output File Create
+```bash
+vim output.tf
+```
+copy and past
+
+```bash
+output "cluster_id" {
+  value = aws_eks_cluster.abrahimcse.id
+}
+
+output "node_group_id" {
+  value = aws_eks_node_group.abrahimcse.id
+}
+
+output "vpc_id" {
+  value = aws_vpc.abrahimcse_vpc.id
+}
+
+output "subnet_ids" {
+  value = aws_subnet.abrahimcse_subnet[*].id
+}
+
+```
+4. Run Terraform File for create eks
+
+```bash
+terraform init
+terraform plan
+terraform validate
+terraform apply
+```
 ---
 ### 5. RBAC Setup (Master Node)
 1. Create cluster service account
