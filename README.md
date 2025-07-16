@@ -95,7 +95,7 @@ Copy configure file
 
 ```bash
 provider "aws" {
-  region = "ap-south-1"
+  region = "ap-southeast-1"
 }
 
 resource "aws_vpc" "abrahimcse_vpc" {
@@ -110,7 +110,7 @@ resource "aws_subnet" "abrahimcse_subnet" {
   count = 2
   vpc_id                  = aws_vpc.abrahimcse_vpc.id
   cidr_block              = cidrsubnet(aws_vpc.abrahimcse_vpc.cidr_block, 8, count.index)
-  availability_zone       = element(["ap-south-1a", "ap-south-1b"], count.index)
+  availability_zone       = element(["ap-southeast-1a", "ap-southeast-1b"], count.index)
   map_public_ip_on_launch = true
 
   tags = {
@@ -313,7 +313,16 @@ output "subnet_ids" {
 terraform init
 terraform plan
 terraform validate
-terraform apply
+terraform apply --auto-approve
+```
+5. Connect with EKS Cluster
+```bash
+aws eks --region ap-southeast-1 update-kubeconfig --name abrahimcse-cluster
+```
+6. Install Kubect and check nodes
+```bash
+sudo snap install kubectl --classic
+kubectl get nodes
 ```
 ---
 ### 5. RBAC Setup (Master Node)
@@ -322,6 +331,13 @@ terraform apply
   user-2 , role-2 (good level of access)
   user-3 , role-3 (read only access)
 
+**Create folder for RBAC**
+
+```bash
+cd ..
+mkdir rbac
+cd rbac
+```
 **Create Namespace**
 
 ```yml
@@ -428,13 +444,29 @@ metadata:
   name: mysecretname
   annotations:
     kubernetes.io/service-account.name: jenkins
-
 ```
 ```bash
 kubectl apply -f sec.yaml -n webapps
-
-kubectl describe secret mysecretname -n webapps // collect token and save into jenkins credential
 ```
+**Collect Token and save into jenkins credential**
+```bash
+kubectl describe secret mysecretname -n webapps
+```
+**Create Secret for Docker Registry (DockerHub)**
+```bash
+kubectl create secret docker-registry regcred \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username=abrahimcse \
+  --docker-password=<your_dockerhub_password> \
+  --docker-email=abrahimcse@gmail.com \
+  --namespace=webapps
+
+```
+**To verify the secret:**
+```bash
+kubectl get secret regcred --output=yaml
+```
+
 **Check kubeconfig Info**
 
 ```bash
@@ -833,8 +865,8 @@ pipeline {
 
 - Pipeline Syntax
   
-  - Sample Step
-    git : Git
+- Sample Step
+  - git : Git
     
     - Repository URL : github url
     - Branch : main
@@ -844,14 +876,25 @@ pipeline {
  git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/abrahimcse/FullStack-Blogging-App.git'
 ```
 
-  - Sample Step
-    withSonarQubeEnv: Prepare SonarQube Scanner environment
+- Sample Step
+  withSonarQubeEnv: Prepare SonarQube Scanner environment
 
     server token : sonar-token
 
 ```groovy
 withSonarQubeEnv(credentialsId: 'sonar-token') {
 }
+```
+- Sample Step
+  withKubeConfig: COnfigure Kubernets CLI (kubectl)
+    
+    - Credential : `k8-cred` 
+    - kubernetes server endpoint : <eks api server endpoint from aws>
+    - cluster name : abrahimcse-cluster
+    - namespace : webapps
+
+```groovy
+ withKubeConfig(caCertificate: '', clusterName: 'abrahimcse-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://< >.ap-southes-1.eks.amazonaws.com')
 ```
 
 **Pipeline Configuration **
@@ -959,7 +1002,7 @@ pipeline {
         }
         stage('Deploy To Kubernetes') {
             steps {
-                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.37.113:6443') {
+                withKubeConfig(caCertificate: '', clusterName: 'abrahimcse-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://< >.ap-southes-1.eks.amazonaws.com') {
                       sh "kubectl apply -f deployment-service.yaml"
                 }
             }
@@ -967,13 +1010,46 @@ pipeline {
         
         stage('Verify the Deployment') {
             steps {
-                withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://172.31.37.113:6443') {
+                withKubeConfig(caCertificate: '', clusterName: 'abrahimcse-cluster', contextName: '', credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://< >.ap-southes-1.eks.amazonaws.com') {
                         sh "kubectl get pods -n webapps"
                         sh "kubectl get svc -n webapps"
                 }
             }
         }
-        
+
+    post {
+    always {
+        script {
+            def jobName = env.JOB_NAME
+            def buildNumber = env.BUILD_NUMBER
+            def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+            def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
+
+            def body = """
+                <html>
+                <body>
+                <div style="border: 4px solid ${bannerColor}; padding: 10px;">
+                <h2>${jobName} - Build ${buildNumber}</h2>
+                <div style="background-color: ${bannerColor}; padding: 10px;">
+                <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3>
+                </div>
+                <p>Check the <a href="${BUILD_URL}">console output</a>.</p>
+                </div>
+                </body>
+                </html>
+            """
+
+            emailext (
+                subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+                body: body,
+                to: 'abrahim.ctech@gmail.com',
+                from: 'jenkins@example.com',
+                replyTo: 'jenkins@example.com',
+                mimeType: 'text/html',
+                attachmentsPattern: 'trivy-image-report.html'
+            )
+        }
+      }       
     }   
 }
 
@@ -986,7 +1062,7 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
 
 ### Step 1: Generate Gmail App Password
 
-1. Go to https://myaccount.google.com
+1. Go to https://myaccount.google.com/apppasswords
 
 2. Navigate to:
   - `Security` → `2-Step Verification` → Enable it (if not already)
@@ -995,8 +1071,9 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
 3. Select:
   - App: `Mail`
   - Device: `Jenkins` (or any name)
-
+**password:** 
 4. ✅ **Copy the generated password **(you’ll use this in Jenkins configuration)
+
 
 ### Step 2: Configure Jenkins Email Notification
 
@@ -1010,10 +1087,10 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
   - Check Use SSL
   - ✅ Add Credentials:
     - **Kind :** Username with password
-    - **Username :** abrahim.ctech@gmail.com
-    - **Password:** genereted password
-    - **ID :** mail-cred
-  - Select the added credential `abrahimctech@gmail.com`(mail-cred)
+    - **Username :** `abrahim.ctech@gmail.com`
+    - **Password:** `ubdh oyoe hirs wudv`
+    - **ID :** `mail-cred`
+  - Select the added credential `abrahim.ctech@gmail.com`(mail-cred)
 
 
 **2. E-mail Notification**
@@ -1024,7 +1101,7 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
 - SMTP Port: 465
 - ✅ Check Use SMTP Authentication
   - Username: `abrahim.ctech@gmail.com`
-  - Password: `Generated app password`
+  - Password: `ubdh oyoe hirs wudv`
 
 **3. Test the Configuration**
 - Scroll down to the **Test configuration** section
