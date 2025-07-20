@@ -1,6 +1,5 @@
 # FullStack-Blogging-App
 
-
 # Infrastructure & Installation (AWS EC2 + K8s + DevOps Tools)
 
 ## 1.AWS Setup
@@ -16,7 +15,6 @@
 - Jenkins (t2 large,30)
 
 ---
-
 
 ## Setup AWS EKS Cluster by Terraform
 
@@ -430,7 +428,6 @@ subjects:
 ```bash
 kubectl apply -f bind.yaml
 ```
-
 **Create Secret to Get Service Account Token**
 
 ```bash
@@ -466,7 +463,6 @@ kubectl create secret docker-registry regcred \
 ```bash
 kubectl get secret regcred --output=yaml
 ```
-
 **Check kubeconfig Info**
 
 ```bash
@@ -492,7 +488,6 @@ sudo sh get-docker.sh
 sudo apt-get install -y uidmap
 dockerd-rootless-setuptool.sh install
 ```
-
 ### Step 2: Run SonarQube Docker Container
  
 ```bash
@@ -531,7 +526,6 @@ docker run -d --name Sonar -p 9000:9000 sonarqube:lts-community
 ![webhook Image]()
 
 ---
-
 
 ## 2. Nexus Server
 
@@ -732,29 +726,23 @@ sudo systemctl restart jenkins
 - **JDK:**
 
   - Name: `jdk17`
-
   - Check "Install automatically"
-
   - Source: `Adoptium.net`
-
   - Version: `jdk-17.0.9+9`
 
 - **SonarQube Scanner:**
 
   - Name: `sonar-scanner`
-
   - Version: `latest`
 
 - **Maven:**
 
   - Name: `maven3`
-
   - Version: `3.6.1`
 
 - **Docker:**
 
   - Name: `docker`
-
   - Install Automatically
 
 ### Step 8: Credentials Setup
@@ -1055,7 +1043,6 @@ pipeline {
 
 ```
 ---
-
 ## 📧 Jenkins Email Notification Setup (Gmail SMTP)
 
 You'll configure Jenkins to send email notifications using Gmail's SMTP service.
@@ -1074,7 +1061,6 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
 **password:** 
 4. ✅ **Copy the generated password **(you’ll use this in Jenkins configuration)
 
-
 ### Step 2: Configure Jenkins Email Notification
 
 **Go to Jenkins: `manage jenkins > system`**
@@ -1091,7 +1077,6 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
     - **Password:** `ubdh oyoe hirs wudv`
     - **ID :** `mail-cred`
   - Select the added credential `abrahim.ctech@gmail.com`(mail-cred)
-
 
 **2. E-mail Notification**
 - SMTP Server: `smtp.gmail.com`
@@ -1167,7 +1152,6 @@ ls ./backbox_exporter &
 
 **Configure [prometheus.yml](https://github.com/prometheus/blackbox_exporter) to include Blackbox:**
 
-
 ```bash
 cd ~/prometheus
 vim prometheus.yml
@@ -1201,8 +1185,6 @@ kill id
 ./prometheus & 
 
 ```
-
-
 ### Step 4: Install Node Exporter (on Jenkins server)
 
 **🔗 [Download Node Exporter](https://prometheus.io/download/#node_exporter)**
@@ -1245,7 +1227,6 @@ kill id
 ./prometheus &
 
 ```
-
 ### Step 5: Connect Grafana with Prometheus
 1. Go to Grafana UI:  `Grafana > Connections > Data sources > Add data source`
 2. Select **Prometheus** from the list.
@@ -1269,3 +1250,5 @@ kill id
 |----------------------|--------------|
 | 🔍 Blackbox Exporter | `7587`       |
 | 🖥️ Node Exporter     | `1860`       |
+
+---
