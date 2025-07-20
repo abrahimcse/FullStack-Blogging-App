@@ -1202,6 +1202,7 @@ kill id
 
 ```
 
+
 ### Step 4: Install Node Exporter (on Jenkins server)
 
 **🔗 [Download Node Exporter](https://prometheus.io/download/#node_exporter)**
@@ -1244,3 +1245,27 @@ kill id
 ./prometheus &
 
 ```
+
+### Step 5: Connect Grafana with Prometheus
+1. Go to Grafana UI:  `Grafana > Connections > Data sources > Add data source`
+2. Select **Prometheus** from the list.
+3. Fill in the details:
+   - **Name**: `Prometheus` (or any preferred name)
+   - **URL**:
+     ```
+     http://<PROMETHEUS_SERVER_IP>:9090
+     ```
+4. Scroll down and click **Save & Test**.  
+   You should see a message like: `Data source is working`.
+
+### Step 6: Import Dashboards
+1. Navigate to:  `Dashboard > Import`
+2. Paste one of the dashboard IDs listed below.
+3. Click **Load**.
+4. Select your **Prometheus** data source.
+5. Click **Import** to finish.
+
+| Dashboard Name       | Dashboard ID |
+|----------------------|--------------|
+| 🔍 Blackbox Exporter | `7587`       |
+| 🖥️ Node Exporter     | `1860`       |
