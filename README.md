@@ -574,11 +574,11 @@ Modify your `pom.xml` file with the Nexus repository endpoints:
  	 <distributionManagement>
         <repository>
             <id>maven-releases</id>
-            <url>http://18.143.91.119:8081/repository/maven-releases/</url> 
+            <url>http://13.212.202.251:8081/repository/maven-releases/</url> 
         </repository>
         <snapshotRepository>
             <id>maven-snapshots</id>
-            <url>http://18.143.91.119:8081/repository/maven-snapshots/</url>
+            <url>http://13.212.202.251:8081/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 ```
