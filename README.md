@@ -461,7 +461,7 @@ kubectl create secret docker-registry regcred \
 ```
 **To verify the secret:**
 ```bash
-kubectl get secret regcred --output=yaml
+kubectl get secret regcred --namespace=webapps --output=yaml
 ```
 **Check kubeconfig Info**
 
