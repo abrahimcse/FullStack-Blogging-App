@@ -1,4 +1,13 @@
 # FullStack-Blogging-App
+**Login Page**
+![Blogging Apps](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/Blogging%20apps.png)
+
+**Home Page**
+![Home Page](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/homepage.png)
+
+**Status Post**
+![Post](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/post.png)
+
 
 # Infrastructure & Installation (AWS EC2 + K8s + DevOps Tools)
 
@@ -14,6 +23,7 @@
 - Monitor
 - Jenkins (t2 large,30)
 
+![Instances](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/Instances.png)
 ---
 
 ## Setup AWS EKS Cluster by Terraform
@@ -313,6 +323,12 @@ terraform plan
 terraform validate
 terraform apply --auto-approve
 ```
+![Terraform Init](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/Terrafom%20Init.png)
+
+**EKS Create**
+
+![EKS Cluster](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/eks%20create.png)
+
 5. Connect with EKS Cluster
 ```bash
 aws eks --region ap-southeast-1 update-kubeconfig --name abrahimcse-cluster
@@ -322,6 +338,12 @@ aws eks --region ap-southeast-1 update-kubeconfig --name abrahimcse-cluster
 sudo snap install kubectl --classic
 kubectl get nodes
 ```
+**EKS Cluster**
+![EKS Cluster](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/cluster.png)
+
+**Node Group**
+![Node Group](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/nodegroup.png)
+
 ---
 ### 5. RBAC Setup (Master Node)
 1. Create cluster service account
@@ -500,6 +522,11 @@ docker run -d --name Sonar -p 9000:9000 sonarqube:lts-community
   - **Username:** `admin`
 
   - **Password:** `admin`
+**Overview**
+![SonarQube](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/sonarqube.png)
+
+**Issues**
+![Issues](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/sonarqube%20issue.png)
 
 ### Step 3: Generate Authentication Token
 
@@ -1042,6 +1069,8 @@ pipeline {
 }
 
 ```
+![Pipeline Stages](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/jenkins%20stage.png)
+
 ---
 ## 📧 Jenkins Email Notification Setup (Gmail SMTP)
 
