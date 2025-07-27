@@ -538,6 +538,8 @@ docker run -d --name Sonar -p 9000:9000 sonarqube:lts-community
 
 3. Click **Generate** and **copy the token**
 
+![Sonar Token](https://github.com/abrahimcse/Boardgame/blob/main/Images/Sonar-Token.png)
+
 ### Step 4: Configure Webhook for Jenkins
 
 1. Navigate to: `**Administration > Configuration > Webhooks**`
@@ -550,7 +552,7 @@ docker run -d --name Sonar -p 9000:9000 sonarqube:lts-community
 
 **📌 Note:** Ensure Jenkins is reachable from SonarQube server.
 
-![webhook Image]()
+![webhook Image](https://github.com/abrahimcse/Boardgame/blob/main/Images/sonarqube%20webhook.png)
 
 ---
 
@@ -592,6 +594,8 @@ cat sonatype-work/nexus3/admin.password
 Browser
  - maven-releases (copy)
  - maven-snapshots (copy)
+
+![Nexus Dashboard](https://github.com/abrahimcse/Boardgame/blob/main/Images/Nexus-browser.png)
  
 ### Step 4: Update Your Maven pom.xml
 
@@ -693,6 +697,13 @@ chmod +x jenkin.sh
 ```bash
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
+![Jenkins Started](https://github.com/abrahimcse/Boardgame/blob/main/Images/jenkins.png)
+
+![Jenkins Getting Started](https://github.com/abrahimcse/Boardgame/blob/main/Images/jenkins-started.png)
+
+![Create Admin User](https://github.com/abrahimcse/Boardgame/blob/main/Images/jenkinsAdminUser.png)
+
+![Configuration](https://github.com/abrahimcse/Boardgame/blob/main/Images/jenkins-configurations.png)
 
 ### Step 4: Install kubectl on Jenkins Server
 ```
@@ -744,7 +755,7 @@ sudo systemctl restart jenkins
 
 *📝 Restart Jenkins after plugin installation.*
 
-![Plugins]() 
+![Plugins](https://github.com/abrahimcse/Boardgame/blob/main/Images/jenkins-plugins.png)
 
 ### Step 7: Global Tool Configuration
 
@@ -757,15 +768,21 @@ sudo systemctl restart jenkins
   - Source: `Adoptium.net`
   - Version: `jdk-17.0.9+9`
 
+![JDK](https://github.com/abrahimcse/Boardgame/blob/main/Images/tools-jdk.png)
+
 - **SonarQube Scanner:**
 
   - Name: `sonar-scanner`
   - Version: `latest`
 
+![Scanner](https://github.com/abrahimcse/Boardgame/blob/main/Images/tools-sonarqubescanner.png)
+
 - **Maven:**
 
   - Name: `maven3`
   - Version: `3.6.1`
+
+![Maven](https://github.com/abrahimcse/Boardgame/blob/main/Images/Tools-maven.png)
 
 - **Docker:**
 
@@ -799,6 +816,8 @@ sudo systemctl restart jenkins
   - secret: `token` (kubectl describe secret mysecretname -n webapps)
   - ID : `k8-cred`
   - Description : `k8-cred`
+
+![Credentials](https://github.com/abrahimcse/Boardgame/blob/main/Images/global-credential-jenkins.png)
 
 ### Step 9: Add Maven Settings File (for Nexus)
 
@@ -1124,6 +1143,8 @@ You'll configure Jenkins to send email notifications using Gmail's SMTP service.
 
 You should receive a **test email** if everything is configured properly.
 
+![Email Test](https://github.com/abrahimcse/Boardgame/blob/main/Images/Test-email.png)
+
 ---
 ## Monitoring Setup: Prometheus + Grafana + Exporters
 
@@ -1164,6 +1185,8 @@ sudo systemctl start grafana-server
 **👤 Default Login:**
 - Username: `admin`
 - Password: `admin`
+
+![Prometheus](https://github.com/abrahimcse/Boardgame/blob/main/Images/Prometheus.png)
 
 ### Step 3: Setup Blackbox Exporter
 **🔗 [Download Blackbox Exporter](https://prometheus.io/download/#blackbox_exporter)**
@@ -1214,6 +1237,8 @@ kill id
 ./prometheus & 
 
 ```
+![BlackBox](https://github.com/abrahimcse/Boardgame/blob/main/Images/Blackbox.png)
+
 ### Step 4: Install Node Exporter (on Jenkins server)
 
 **🔗 [Download Node Exporter](https://prometheus.io/download/#node_exporter)**
@@ -1229,6 +1254,8 @@ cd node_exporter
 ls
 ./node_exporter &
 ```
+![Node Exporter](https://github.com/abrahimcse/Boardgame/blob/main/Images/Node%20Exporter.png)
+
 **🌐 Node Exporter Port: `http://<jenkins_server_ip>:9100`**
 
 **Add Node Exporter and Jenkins Job to prometheus.yml**
@@ -1280,4 +1307,12 @@ kill id
 | 🔍 Blackbox Exporter | `7587`       |
 | 🖥️ Node Exporter     | `1860`       |
 
+
+**Grafana Blackbox**
+
+![Grafana Blackbox](https://github.com/abrahimcse/Boardgame/blob/main/Images/grafana%20blackbox.png)
+
+**Grafana NodeExporter**
+
+![Grafana NodeExporter](https://github.com/abrahimcse/Boardgame/blob/main/Images/grafana%20Node%20exporter.png)
 ---
