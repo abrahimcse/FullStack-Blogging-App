@@ -7,24 +7,27 @@ This app supports posting, editing, and managing blogs with continuous delivery 
 
 ## Features
 
-✍️ Create, Edit, and Delete Blog Posts
-📦 RESTful API using Spring Boot (Java)
-📊 Static Code Analysis with SonarQube
-🛡️ Vulnerability Scanning with Trivy
-🧪 Automated Build, Test, and Deploy Pipeline
-☸️ Kubernetes Deployment on AWS EKS
-📦 Containerized using Docker
-📤 CI/CD with Jenkins
-🔐 Secure Artifact Management via Nexus
-📧 Email Notifications on Deployment via Jenkins
+- Create, Edit, and Delete Blog Posts
+- RESTful API using Spring Boot (Java)
+- Static Code Analysis with SonarQube
+- Vulnerability Scanning with Trivy
+- Automated Build, Test, and Deploy Pipeline
+- Kubernetes Deployment on AWS EKS
+- Containerized using Docker
+- CI/CD with Jenkins
+- Secure Artifact Management via Nexus
+- Email Notifications on Deployment via Jenkins
 
 **Login Page**
+
 ![Blogging Apps](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/Blogging%20apps.png)
 
 **Home Page**
+
 ![Home Page](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/homepage.png)
 
 **Status Post**
+
 ![Post](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/post.png)
 
 ### ☁️ DevOps & Deployment
