@@ -1,4 +1,23 @@
 # FullStack-Blogging-App
+
+A production-ready **FullStack Blogging Application** built with Java (Spring Boot), Docker, and Kubernetes — fully automated using modern DevOps tools.
+This app supports posting, editing, and managing blogs with continuous delivery and security integration.
+
+![BloggingApps](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/blogapp.gif)
+
+## Features
+
+✍️ Create, Edit, and Delete Blog Posts
+📦 RESTful API using Spring Boot (Java)
+📊 Static Code Analysis with SonarQube
+🛡️ Vulnerability Scanning with Trivy
+🧪 Automated Build, Test, and Deploy Pipeline
+☸️ Kubernetes Deployment on AWS EKS
+📦 Containerized using Docker
+📤 CI/CD with Jenkins
+🔐 Secure Artifact Management via Nexus
+📧 Email Notifications on Deployment via Jenkins
+
 **Login Page**
 ![Blogging Apps](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/Blogging%20apps.png)
 
@@ -8,6 +27,16 @@
 **Status Post**
 ![Post](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/post.png)
 
+### ☁️ DevOps & Deployment
+- Docker
+- Kubernetes
+- AWS EKS (Elastic Kubernetes Service)
+- Terraform (for Infrastructure as Code)
+- Jenkins (CI/CD pipeline)
+- Nexus (Artifact Repository)
+- SonarQube (Code Quality Check)
+- Trivy (Container Image Scanning)
+- Gmail SMTP (Jenkins Email Notification)
 
 # Infrastructure & Installation (AWS EC2 + K8s + DevOps Tools)
 
@@ -522,6 +551,7 @@ docker run -d --name Sonar -p 9000:9000 sonarqube:lts-community
   - **Username:** `admin`
 
   - **Password:** `admin`
+
 **Overview**
 ![SonarQube](https://github.com/abrahimcse/FullStack-Blogging-App/blob/main/Images/sonarqube.png)
 
